@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-events-to-slack-streamer
+  labels:
+    app: k8s-events-to-slack-streamer
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: k8s-events-to-slack-streamer
+    spec:
+      containers:
+      - image: andrey9kin/k8s-events-to-slack-streamer:1.3.1
+        imagePullPolicy: Always
+        name: k8s-events-to-slack-streamer
+        env:
+        - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
+          value: PUT-WEB-HOOK-URL-HERE
+        - name: K8S_EVENTS_STREAMER_NAMESPACE
+          value: 'default' 
+#        - name: K8S_EVENTS_STREAMER_DEBUG
+#          value: 'true'
+        - name: K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS
+          value: 'True'
+#        It is imporatnt that you use <> around user names
+#        https://api.slack.com/docs/message-formatting#linking_to_channels_and_users
+#        - name: K8S_EVENTS_STREAMER_USERS_TO_NOTIFY
+#          value: '<@andrey9kin>'
+        - name: K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP
+          value: 'Scheduled ScalingReplicaSet Pulling Pulled Created Started Killing SuccessfulMountVolume SuccessfulUnMountVolume'
