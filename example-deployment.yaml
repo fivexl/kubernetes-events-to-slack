@@ -12,7 +12,7 @@ spec:
         app: k8s-events-to-slack-streamer
     spec:
       containers:
-      - image: andrey9kin/k8s-events-to-slack-streamer:1.3.1
+      - image: ghcr.io/fivexl/kubernetes-events-to-slack:1.4.0
         imagePullPolicy: Always
         name: k8s-events-to-slack-streamer
         env:
