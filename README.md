@@ -1,7 +1,5 @@
 [![FivexL](https://releases.fivexl.io/fivexlbannergit.jpg)](https://fivexl.io/)
 
-[![Docker build](https://img.shields.io/docker/build/fivexl/kubernetes-events-to-slack.svg)](https://hub.docker.com/r/fivexl/kubernetes-events-to-slack)
-
 # K8S events to Slack streamer
 
 Streams k8s events from k8s namespace to Slack channel as a Slack bot using incoming web hooks. No tokens needed.
@@ -20,6 +18,8 @@ Configuration is done via env variables that you set in deployment or configmap.
 # Deployment
 
 Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](example-deployment.yaml)
+
+Docker Hub repo is [here](https://hub.docker.com/r/fivexl/kubernetes-events-to-slack)
 
 # Example message
 
