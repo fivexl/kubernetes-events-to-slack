@@ -1,6 +1,6 @@
 [![FivexL](https://releases.fivexl.io/fivexlbannergit.jpg)](https://fivexl.io/)
 
-[![Docker Automated build](https://img.shields.io/docker/automated/fivexl/kubernetes-events-to-slack.svg)](https://hub.docker.com/r/fivexl/kubernetes-events-to-slack)
+[![Docker build](https://img.shields.io/docker/build/fivexl/kubernetes-events-to-slack.svg)](https://hub.docker.com/r/fivexl/kubernetes-events-to-slack)
 
 # K8S events to Slack streamer
 
