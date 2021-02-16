@@ -43,7 +43,7 @@ spec:
         app: k8s-events-to-slack-streamer
     spec:
       containers:
-      - image: fivexl/kubernetes-events-to-slack:1.5.0
+      - image: fivexl/kubernetes-events-to-slack:1.5.1
         imagePullPolicy: Always
         name: k8s-events-to-slack-streamer
         env:

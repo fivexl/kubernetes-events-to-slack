@@ -155,6 +155,7 @@ def main():
         except Exception as some_error:
             logger.error(some_error)
             post_slack_message(slack_web_hook_url, format_error_to_slack_message(str(some_error)))
+            time.sleep(60)
             continue
 
         # Clean cached events after 2 hours, default event ttl is 1 hour in K8s
