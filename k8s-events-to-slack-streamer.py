@@ -88,6 +88,15 @@ def format_error_to_slack_message(error_message):
     return json.dumps(message)
 
 
+def stream_events(kubernetes, k8s_namespace_name, timeout):
+    v1 = kubernetes.client.CoreV1Api()
+    k8s_watch = kubernetes.watch.Watch()
+    if k8s_namespace_name:
+        return k8s_watch.stream(v1.v1.list_namespaced_event, k8s_namespace_name, timeout_seconds=timeout)
+    else:
+        return k8s_watch.stream(v1.list_event_for_all_namespaces, timeout_seconds=timeout)
+
+
 def main():
 
     if os.environ.get('K8S_EVENTS_STREAMER_DEBUG', False):
@@ -98,7 +107,7 @@ def main():
                             format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
     logger.info('Reading configuration...')
-    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', 'default')
+    k8s_namespace_name = os.environ.get('K8S_EVENTS_STREAMER_NAMESPACE', '')
     # Uppercase event reasons to skip so we can consistently compare no matter how exactly
     # user enters them
     reasons_to_skip = os.environ.get('K8S_EVENTS_STREAMER_LIST_OF_REASONS_TO_SKIP', '').upper().split()
@@ -109,11 +118,6 @@ def main():
         reasons_to_skip.append('SUCCESSFULDELETE')
     users_to_notify = os.environ.get('K8S_EVENTS_STREAMER_USERS_TO_NOTIFY', '')
     slack_web_hook_url = read_env_variable_or_die('K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL')
-    kubernetes.config.load_incluster_config()
-    # This one is for local testing
-    # kubernetes.config.load_kube_config()
-    v1 = kubernetes.client.CoreV1Api()
-    k8s_watch = kubernetes.watch.Watch()
     logger.info('Configuration is OK')
     logger.info('Running with the following parameters')
     logger.info(f'K8S_EVENTS_STREAMER_NAMESPACE: {k8s_namespace_name}')
@@ -121,11 +125,16 @@ def main():
     logger.info(f'K8S_EVENTS_STREAMER_USERS_TO_NOTIFY: {users_to_notify}')
     logger.info(f'K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL: {slack_web_hook_url}')
 
+    logger.info('Loading k8s config...')
+    kubernetes.config.load_incluster_config()
+    # This one is for local testing
+    # kubernetes.config.load_kube_config()
+
     cached_event_uids = []
     while True:
         try:
             logger.info('Processing events for two hours...')
-            for event in k8s_watch.stream(v1.list_namespaced_event, k8s_namespace_name, timeout_seconds=7200):
+            for event in stream_events(kubernetes, k8s_namespace_name, 7200):
                 logger.debug(str(event))
                 event_reason = get_event_reason(event)
                 event_uid = event['object'].metadata.uid

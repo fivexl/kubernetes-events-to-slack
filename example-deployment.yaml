@@ -43,14 +43,14 @@ spec:
         app: k8s-events-to-slack-streamer
     spec:
       containers:
-      - image: fivexl/kubernetes-events-to-slack:1.4.2
+      - image: fivexl/kubernetes-events-to-slack:1.5.0
         imagePullPolicy: Always
         name: k8s-events-to-slack-streamer
         env:
         - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
           value: PUT-WEB-HOOK-URL-HERE
-        - name: K8S_EVENTS_STREAMER_NAMESPACE
-          value: 'default' 
+#        - name: K8S_EVENTS_STREAMER_NAMESPACE
+#          value: 'default'
 #        - name: K8S_EVENTS_STREAMER_DEBUG
 #          value: 'true'
         - name: K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS
