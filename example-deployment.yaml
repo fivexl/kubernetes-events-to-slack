@@ -2,7 +2,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: k8s-events-to-slack-streamer
-  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -42,6 +41,9 @@ spec:
       labels:
         app: k8s-events-to-slack-streamer
     spec:
+      automountServiceAccountToken: true
+      serviceAccount: k8s-events-to-slack-streamer
+      serviceAccountName: k8s-events-to-slack-streamer
       containers:
       - image: fivexl/kubernetes-events-to-slack:1.5.1
         imagePullPolicy: Always
