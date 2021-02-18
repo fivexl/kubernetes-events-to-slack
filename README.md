@@ -19,6 +19,8 @@ Configuration is done via env variables that you set in deployment or configmap.
 
 Intention is that you run streamer container in your k8s cluster. Take a look on example [deployment yaml file](example-deployment.yaml)
 
+Or if you are a Terraform kind of person you can copy [terraform example](example-deployment.tf) or use this repo as a module. Perhaps we should do a normal module out of it?
+
 Docker Hub repo is [here](https://hub.docker.com/r/fivexl/kubernetes-events-to-slack)
 
 # Example message
