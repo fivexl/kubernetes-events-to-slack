@@ -7,6 +7,7 @@ import json
 import logging
 import http.client
 import kubernetes
+import traceback
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -44,13 +45,17 @@ def get_event_reason(event):
 
 def format_k8s_event_to_slack_message(event_object, notify=''):
     event = event_object['object']
+
+    def timestamp(obj):
+        return obj.strftime('%d/%m/%Y %H:%M:%S %Z') if obj else "no info"
+
     message = {
         'attachments': [{
             'color': '#36a64f',
             'title': event.message,
             'text': 'event type: {}, event reason: {}'.format(event_object['type'], event.reason),
-            'footer': 'First time seen: {}, Last time seen: {}, Count: {}'.format(event.first_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z'),
-                                                                                  event.last_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z'),
+            'footer': 'First time seen: {}, Last time seen: {}, Count: {}'.format(timestamp(event.first_timestamp),
+                                                                                  timestamp(event.last_timestamp),
                                                                                   event.count),
             'fields': [
                 {
@@ -63,7 +68,7 @@ def format_k8s_event_to_slack_message(event_object, notify=''):
                 {
                     'title': 'Metadata',
                     'value': 'name: {}, creation time: {}'.format(event.metadata.name,
-                                                                  event.metadata.creation_timestamp.strftime('%d/%m/%Y %H:%M:%S %Z')),
+                                                                  timestamp(event.metadata.creation_timestamp)),
                     'short': 'true'
                 }
             ],
@@ -135,27 +140,43 @@ def main():
         try:
             logger.info('Processing events for two hours...')
             for event in stream_events(kubernetes, k8s_namespace_name, 7200):
-                logger.debug(str(event))
-                event_reason = get_event_reason(event)
-                event_uid = event['object'].metadata.uid
-                if event_reason in reasons_to_skip:
-                    logger.info(f'Event reason is {event_reason} and it is in the skip list. So skip it')
+                try:
+                    logger.debug(str(event))
+                    event_reason = get_event_reason(event)
+                    event_uid = event['object'].metadata.uid
+                    if event_reason in reasons_to_skip:
+                        logger.info(f'Event reason is {event_reason} and it is in the skip list. So skip it')
+                        continue
+                    if event_uid in cached_event_uids:
+                        logger.info(f'Event id is {event_uid} and it is in the cached events list. So skip it')
+                        continue
+                    message = format_k8s_event_to_slack_message(event, users_to_notify)
+                    post_slack_message(slack_web_hook_url, message)
+                    cached_event_uids.append(event_uid)
+                # deal with parsing errors
+                except Exception as error:
+                    logger.exception(error)
+                    logger.error(event)
+                    stack_trace = traceback.format_exc()
+                    message = f'Failed to parse event and error is:\n{stack_trace}\n{event}'
+                    post_slack_message(
+                        slack_web_hook_url,
+                        format_error_to_slack_message(message)
+                    )
+                    time.sleep(30)
                     continue
-                if event_uid in cached_event_uids:
-                    logger.info(f'Event id is {event_uid} and it is in the cached events list. So skip it')
-                    continue
-                message = format_k8s_event_to_slack_message(event, users_to_notify)
-                post_slack_message(slack_web_hook_url, message)
-                cached_event_uids.append(event_uid)
         except TimeoutError as timeout_error:
-            logger.error(timeout_error)
-            logger.warning('Wait 30 sec and check again due to error.')
+            logger.exception(timeout_error)
+            logger.warning('Wait 30 sec and check again due time out error.')
             time.sleep(30)
             continue
-        except Exception as some_error:
-            logger.error(some_error)
-            post_slack_message(slack_web_hook_url, format_error_to_slack_message(str(some_error)))
-            time.sleep(60)
+        # Deal with unexpected stuff
+        except Exception as error:
+            logger.exception(error)
+            stack_trace = traceback.format_exc()
+            message = f'Unexpected error:\n{stack_trace}'
+            post_slack_message(slack_web_hook_url, format_error_to_slack_message(message))
+            time.sleep(30)
             continue
 
         # Clean cached events after 2 hours, default event ttl is 1 hour in K8s
