@@ -88,6 +88,21 @@ resource "kubernetes_deployment" "streamer" {
           }
 
           env {
+            name  = "K8S_CLUSTER_NAME"
+            value = var.cluster_name
+          }
+
+          env {
+            name  = "K8S_SLACK_CHANNEL"
+            value = var.slack_channel
+          }
+
+          env {
+            name  = "K8S_SLACK_USERNAME"
+            value = var.slack_username
+          }
+
+          env {
             name  = "K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS"
             value = "True"
           }
@@ -103,5 +118,17 @@ resource "kubernetes_deployment" "streamer" {
 }
 
 variable "streamer_hook_url" {
+  type = string
+}
+
+variable "cluster_name" {
+  type = string
+}
+
+variable "slack_channel" {
+  type = string
+}
+
+variable "slack_username" {
   type = string
 }

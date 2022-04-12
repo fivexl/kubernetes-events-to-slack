@@ -51,6 +51,15 @@ spec:
         env:
         - name: K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL
           value: PUT-WEB-HOOK-URL-HERE
+        # if you don't put anything, default to mycluster
+        - name: K8S_CLUSTER_NAME
+          value: PUT-CLUSTER-NAME-HERE
+        # if you don't put anything, default to #random
+        - name: K8S_SLACK_CHANNEL
+          value: PUT-SLACK-CHANNEL-HERE
+        # if you don't put anything, default to k8s-events-to-slack-streamer
+        - name: K8S_SLACK_USERNAME
+          value: PUT-SLACK-USERNAME-HERE
 #        - name: K8S_EVENTS_STREAMER_NAMESPACE
 #          value: 'default'
 #        - name: K8S_EVENTS_STREAMER_DEBUG

@@ -11,7 +11,9 @@ import traceback
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
+slack_channel = os.environ.get('K8S_SLACK_CHANNEL', '#random')
+slack_username = os.environ.get('K8S_SLACK_USERNAME', 'k8s-events-to-slack-streamer')
+k8s_cluster_name = os.environ.get('K8S_CLUSTER_NAME', 'mycluster')
 
 def read_env_variable_or_die(env_var_name):
     value = os.environ.get(env_var_name, '')
@@ -50,9 +52,11 @@ def format_k8s_event_to_slack_message(event_object, notify=''):
         return obj.strftime('%d/%m/%Y %H:%M:%S %Z') if obj else "no info"
 
     message = {
+        'channel': slack_channel,
+        'username': slack_username,
         'attachments': [{
             'color': '#36a64f',
-            'title': event.message,
+            'title': 'Cluster: {}, {}'.format(k8s_cluster_name, event.message),
             'text': 'event type: {}, event reason: {}'.format(event_object['type'], event.reason),
             'footer': 'First time seen: {}, Last time seen: {}, Count: {}'.format(timestamp(event.first_timestamp),
                                                                                   timestamp(event.last_timestamp),
