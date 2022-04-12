@@ -9,6 +9,9 @@ Streams k8s events from k8s namespace to Slack channel as a Slack bot using inco
 Configuration is done via env variables that you set in deployment or configmap.
 
 * `K8S_EVENTS_STREAMER_INCOMING_WEB_HOOK_URL` - Slack web hook URL where to send events. Mandatory parameter.
+* `K8S_CLUSTER_NAME` - Allow multiple clusters to stream in the events.
+* `K8S_SLACK_CHANNEL` - Allow overwrite slack channel name.
+* `K8S_SLACK_USERNAME` - Allow overwrite slack username.
 * `K8S_EVENTS_STREAMER_NAMESPACE` - k8s namespace to collect events from. Will use be sending events from all namespaces if not specified
 * `K8S_EVENTS_STREAMER_DEBUG` - Enable debug print outs to the log. `False` if not defined. Set to `True` to enable.
 * `K8S_EVENTS_STREAMER_SKIP_DELETE_EVENTS` - Skip all events of type DELETED by setting  env variable to `True`. `False` if not defined. Very useful since those events tells you that k8s event was deleted which has no value to you as operator.
